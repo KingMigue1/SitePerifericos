@@ -1,20 +1,12 @@
 // Variáveis globais
 let editandoProduto = false;
-
-// Funções de Utilidade
-function formatarPreco(preco) {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    }).format(preco);
-}
+let produtosAtuais = [];
 
 // Funções de Interface
 function mostrarFormulario() {
-    document.getElementById('productForm').style.display = 'block';
-    document.getElementById('formProduto').reset();
-    document.getElementById('produtoId').value = '';
-    editandoProduto = false;
+    const form = document.getElementById('productForm');
+    form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth' });
 }
 
 function esconderFormulario() {
@@ -23,6 +15,14 @@ function esconderFormulario() {
 
 function cancelarEdicao() {
     esconderFormulario();
+    limparFormulario();
+}
+
+function limparFormulario() {
+    document.getElementById('productForm').reset();
+    document.getElementById('especificacoesContainer').innerHTML = '';
+    document.getElementById('produtoId').value = '';
+    editandoProduto = false;
 }
 
 function atualizarEspecificacoes() {
@@ -86,58 +86,21 @@ function obterEspecificacoes() {
     return especificacoes;
 }
 
-function preencherEspecificacoes(especificacoes) {
-    Object.entries(especificacoes).forEach(([key, value]) => {
-        const input = document.getElementById(key);
-        if (input) input.value = value;
-    });
-}
-
-async function editarProduto(id) {
-    try {
-        const produto = await ProdutoDB.buscarPorId(parseInt(id));
-        if (produto) {
-            preencherFormulario(produto);
-        }
-    } catch (error) {
-        console.error('Erro ao buscar produto:', error);
-        alert('Erro ao carregar produto para edição');
-    }
-}
-
-async function preencherFormulario(produto) {
-    document.getElementById('produtoId').value = produto.id;
-    document.getElementById('nome').value = produto.nome;
-    document.getElementById('tipo').value = produto.tipo;
-    document.getElementById('marca').value = produto.marca;
-    document.getElementById('preco').value = produto.preco;
-    document.getElementById('imagem').value = produto.imagem;
-    document.getElementById('urlProduto').value = produto.urlProduto || '';
-    atualizarEspecificacoes(produto.tipo);
-    preencherEspecificacoes(produto.especificacoes);
-
-    editandoProduto = true;
-    mostrarFormulario();
-}
-
 async function salvarProduto(event) {
     event.preventDefault();
     
     try {
-        // Validar campos obrigatórios
         const nome = document.getElementById('nome').value.trim();
         const tipo = document.getElementById('tipo').value;
-        const marca = document.getElementById('marca').value.trim();
         const preco = document.getElementById('preco').value;
         const imagem = document.getElementById('imagem').value.trim();
         const urlProduto = document.getElementById('urlProduto').value.trim();
 
-        if (!nome || !tipo || !marca || !preco || !imagem || !urlProduto) {
+        if (!nome || !tipo || !preco || !imagem || !urlProduto) {
             alert('Por favor, preencha todos os campos obrigatórios');
             return;
         }
 
-        // Validar especificações
         const especificacoes = obterEspecificacoes();
         if (Object.keys(especificacoes).length === 0) {
             alert('Por favor, preencha as especificações do produto');
@@ -148,20 +111,17 @@ async function salvarProduto(event) {
             id: document.getElementById('produtoId').value ? parseInt(document.getElementById('produtoId').value) : undefined,
             nome,
             tipo,
-            marca,
             preco: parseFloat(preco),
             imagem,
             urlProduto,
             especificacoes
         };
 
-        // Validar preço
         if (isNaN(produto.preco) || produto.preco <= 0) {
             alert('Por favor, insira um preço válido');
             return;
         }
 
-        // Validar URLs
         try {
             new URL(produto.imagem);
             new URL(produto.urlProduto);
@@ -170,16 +130,14 @@ async function salvarProduto(event) {
             return;
         }
 
-        // Salvar no banco de dados
         if (editandoProduto) {
-            await ProdutoDB.atualizar(produto);
+            await GoogleSheetsDB.atualizar(produto);
             alert('Produto atualizado com sucesso!');
         } else {
-            await ProdutoDB.adicionar(produto);
+            await GoogleSheetsDB.adicionar(produto);
             alert('Produto adicionado com sucesso!');
         }
 
-        // Atualizar interface
         await atualizarTabela();
         esconderFormulario();
     } catch (error) {
@@ -192,7 +150,7 @@ async function excluirProduto(id) {
     if (!confirm('Tem certeza que deseja excluir este produto?')) return;
 
     try {
-        await ProdutoDB.excluir(parseInt(id));
+        await GoogleSheetsDB.excluir(parseInt(id));
         await atualizarTabela();
     } catch (error) {
         console.error('Erro ao excluir produto:', error);
@@ -202,49 +160,146 @@ async function excluirProduto(id) {
 
 async function atualizarTabela() {
     try {
-        const produtos = await ProdutoDB.listarTodos();
-        const tbody = document.getElementById('productsTableBody');
-        
-        tbody.innerHTML = produtos.map(produto => `
-            <tr>
-                <td>${produto.id}</td>
-                <td><img src="${produto.imagem}" alt="${produto.nome}" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                <td>${produto.nome}</td>
-                <td>${produto.tipo}</td>
-                <td>${produto.marca}</td>
-                <td>R$ ${produto.preco.toFixed(2)}</td>
-                <td>
-                    <button class="btn-edit" onclick="editarProduto('${produto.id}')">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-delete" onclick="excluirProduto('${produto.id}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    <a href="${produto.urlProduto}" target="_blank" class="btn-link">
-                        <i class="fas fa-external-link-alt"></i>
-                    </a>
-                </td>
-            </tr>
-        `).join('');
+        produtosAtuais = await GoogleSheetsDB.listarTodos();
+        atualizarTabelaComProdutos(produtosAtuais);
     } catch (error) {
         console.error('Erro ao atualizar tabela:', error);
-        alert('Erro ao carregar produtos');
+        mostrarNotificacao('Erro ao carregar produtos: ' + error.message, 'error');
     }
+}
+
+function atualizarTabelaComProdutos(produtos) {
+    const tbody = document.getElementById('productsTableBody');
+    
+    tbody.innerHTML = produtos.map(produto => `
+        <tr>
+            <td>${produto.id}</td>
+            <td>
+                <img src="${produto.imagem}" alt="${produto.nome}" 
+                     style="width: 50px; height: 50px; object-fit: contain; cursor: pointer;"
+                     onclick="mostrarEspecificacoes(${JSON.stringify(produto)})">
+            </td>
+            <td>${produto.nome}</td>
+            <td>${produto.tipo}</td>
+            <td>R$ ${produto.preco.toFixed(2)}</td>
+            <td>
+                <div class="action-buttons">
+                    <a href="${produto.urlProduto}" target="_blank" class="btn-link" title="Ver produto">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                    <button onclick="editarProduto(${produto.id})" class="btn-edit" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="excluirProduto(${produto.id})" class="btn-delete" title="Excluir">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function mostrarNotificacao(mensagem, tipo = 'success') {
+    const notificacao = document.createElement('div');
+    notificacao.className = `notificacao ${tipo}`;
+    notificacao.textContent = mensagem;
+    
+    document.body.appendChild(notificacao);
+    
+    setTimeout(() => {
+        notificacao.remove();
+    }, 3000);
+}
+
+async function editarProduto(id) {
+    try {
+        const produto = await GoogleSheetsDB.obterPorId(id);
+        if (!produto) {
+            mostrarNotificacao('Produto não encontrado', 'error');
+            return;
+        }
+        
+        document.getElementById('produtoId').value = produto.id;
+        document.getElementById('nome').value = produto.nome;
+        document.getElementById('tipo').value = produto.tipo;
+        document.getElementById('preco').value = produto.preco;
+        document.getElementById('imagem').value = produto.imagem;
+        document.getElementById('urlProduto').value = produto.urlProduto;
+        
+        atualizarEspecificacoes();
+        
+        // Preencher especificações
+        Object.entries(produto.especificacoes).forEach(([key, value]) => {
+            const input = document.getElementById(key);
+            if (input) input.value = value;
+        });
+        
+        editandoProduto = true;
+        mostrarFormulario();
+    } catch (error) {
+        console.error('Erro ao carregar produto:', error);
+        mostrarNotificacao('Erro ao carregar produto: ' + error.message, 'error');
+    }
+}
+
+// Função para filtrar produtos
+function filtrarProdutos() {
+    const filtro = document.getElementById('filtroProdutos').value.toLowerCase();
+    const tipoFiltro = document.getElementById('filtroTipo').value;
+    
+    const produtosFiltrados = produtosAtuais.filter(produto => {
+        const matchNome = produto.nome.toLowerCase().includes(filtro);
+        const matchTipo = tipoFiltro === '' || produto.tipo === tipoFiltro;
+        return matchNome && matchTipo;
+    });
+    
+    atualizarTabelaComProdutos(produtosFiltrados);
+}
+
+// Função para mostrar especificações em um modal
+function mostrarEspecificacoes(produto) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Especificações do ${produto.nome}</h2>
+            <div class="especificacoes-grid">
+                ${Object.entries(produto.especificacoes).map(([key, value]) => `
+                    <div class="espec-item">
+                        <strong>${key}:</strong> ${value}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    modal.querySelector('.close').onclick = () => {
+        modal.remove();
+    };
+    
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    };
 }
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Inicializar banco de dados
-        await initDB();
-        
-        // Atualizar especificações quando o tipo mudar
-        document.getElementById('tipo').addEventListener('change', atualizarEspecificacoes);
-
-        // Inicializar tabela
         await atualizarTabela();
+        
+        // Adicionar event listeners para filtros
+        document.getElementById('filtroProdutos').addEventListener('input', filtrarProdutos);
+        document.getElementById('filtroTipo').addEventListener('change', filtrarProdutos);
+        
+        // Adicionar event listener para o formulário
+        document.getElementById('productForm').addEventListener('submit', salvarProduto);
     } catch (error) {
         console.error('Erro ao inicializar:', error);
-        alert('Erro ao inicializar a página');
+        mostrarNotificacao('Erro ao inicializar a página: ' + error.message, 'error');
     }
 }); 
