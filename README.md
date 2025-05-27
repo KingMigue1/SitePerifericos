@@ -53,6 +53,10 @@ OPTO é um **comparador e recomendador de periféricos**, com foco em dois perfi
 
 ---
 
-## 📝 Licença
+## 👥 Fundadores
 
--
+- **Adrian (sanitysz)**
+- **Caio Lucas do Carmo Nazaré**  
+- **Miguel Tobias Vaz Furtado**  
+
+---
