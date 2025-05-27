@@ -45,27 +45,6 @@ OPTO é um **comparador e recomendador de periféricos**, com foco em dois perfi
 
 ---
 
-## 🧰 Tecnologias Usadas *(Exemplo – adapte ao seu stack real)*
-
-- **Next.js / React** para o frontend  
-- **TailwindCSS** para estilização moderna  
-- **Node.js** (opcional para backend)  
-- **APIs de Afiliados** (Amazon, etc.)  
-- **Web Scraping** controlado para promoções (se aplicável)  
-- **MongoDB ou Firebase** para favoritos, comparações ou login
-
----
-
-## 🚀 Como contribuir
-
-1. Faça um fork do projeto  
-2. Crie uma branch: `git checkout -b minha-feature`  
-3. Commit suas alterações: `git commit -m 'Adiciona nova feature'`  
-4. Push: `git push origin minha-feature`  
-5. Abra um Pull Request
-
----
-
 ## 📫 Contato
 
 📧 contato@opto.tech  
@@ -76,4 +55,4 @@ OPTO é um **comparador e recomendador de periféricos**, com foco em dois perfi
 
 ## 📝 Licença
 
-Este projeto está licenciado sob a **MIT License** – sinta-se livre para usar, adaptar e contribuir.
+-
