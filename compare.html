@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comparar Produtos - Gamer Gear Store</title>
+    <title>Comparar Produtos - OPTO Review</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/compare.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +13,10 @@
     <!-- Barra de Navegação -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="nav-logo">Gamer Gear Store</a>
+            <a href="index.html" class="nav-logo">OPTO Review</a>
+            <button class="menu-toggle" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="search.html" class="nav-link">Buscar Produtos</a>
@@ -29,6 +32,7 @@
             </div>
         </div>
     </nav>
+    <div class="nav-overlay" onclick="toggleMenu()"></div>
 
     <!-- Conteúdo Principal -->
     <main class="compare-container">
@@ -90,9 +94,246 @@
         </div>
     </main>
 
+    <!-- Scripts -->
     <script src="js/theme.js"></script>
-    <script src="js/database.js"></script>
+    <script src="js/googleSheetsDB.js"></script>
     <script src="js/products.js"></script>
-    <script src="js/compare.js"></script>
+    <script>
+        // Função para alternar o menu mobile
+        function toggleMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            const overlay = document.querySelector('.nav-overlay');
+            const menuToggle = document.querySelector('.menu-toggle i');
+            
+            navLinks.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Alterna o ícone do menu
+            if (menuToggle.classList.contains('fa-bars')) {
+                menuToggle.classList.remove('fa-bars');
+                menuToggle.classList.add('fa-times');
+            } else {
+                menuToggle.classList.remove('fa-times');
+                menuToggle.classList.add('fa-bars');
+            }
+        }
+
+        // Variáveis globais
+        let produtos = [];
+        let produtosSelecionados = [];
+        let produto1 = null;
+        let produto2 = null;
+
+        // Funções de Utilidade
+        function formatarPreco(preco) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(preco);
+        }
+
+        // Função para obter todos os produtos
+        async function obterTodosProdutos() {
+            try {
+                return await GoogleSheetsDB.listarTodos();
+            } catch (error) {
+                console.error('Erro ao obter produtos:', error);
+                return [];
+            }
+        }
+
+        // Funções de Interface
+        async function carregarProdutos() {
+            try {
+                produtos = await obterTodosProdutos();
+                
+                // Ordenar produtos por nome
+                produtos.sort((a, b) => a.nome.localeCompare(b.nome));
+                
+                const select1 = document.getElementById('product1');
+                const select2 = document.getElementById('product2');
+                
+                // Limpar selects
+                select1.innerHTML = '<option value="">Selecione o primeiro produto</option>';
+                select2.innerHTML = '<option value="">Selecione o segundo produto</option>';
+                
+                // Adicionar produtos aos selects
+                produtos.forEach(produto => {
+                    const option1 = document.createElement('option');
+                    const option2 = document.createElement('option');
+                    
+                    option1.value = produto.id;
+                    option1.textContent = produto.nome;
+                    option2.value = produto.id;
+                    option2.textContent = produto.nome;
+                    
+                    select1.appendChild(option1);
+                    select2.appendChild(option2.cloneNode(true));
+                });
+                
+                // Adicionar event listeners
+                select1.addEventListener('change', () => selecionarProduto(1, select1.value));
+                select2.addEventListener('change', () => selecionarProduto(2, select2.value));
+                
+            } catch (error) {
+                console.error('Erro ao carregar produtos:', error);
+            }
+        }
+
+        function selecionarProduto(numero, id) {
+            const produto = produtos.find(p => p.id === parseInt(id));
+            
+            if (produto) {
+                // Se for o primeiro produto selecionado
+                if (numero === 1) {
+                    produto1 = produto;
+                    document.querySelector('#product1').parentElement.classList.add('selected');
+                    
+                    // Atualizar o segundo select para mostrar apenas produtos do mesmo tipo
+                    const select2 = document.getElementById('product2');
+                    select2.innerHTML = '<option value="">Selecione o segundo produto</option>';
+                    
+                    produtos
+                        .filter(p => p.tipo === produto.tipo && p.id !== produto.id)
+                        .forEach(p => {
+                            const option = document.createElement('option');
+                            option.value = p.id;
+                            option.textContent = p.nome;
+                            select2.appendChild(option);
+                        });
+                    
+                    // Limpar a seleção do segundo produto se existir
+                    if (produto2) {
+                        produto2 = null;
+                        document.querySelector('#product2').parentElement.classList.remove('selected');
+                    }
+                } else {
+                    // Verificar se o tipo do segundo produto é igual ao do primeiro
+                    if (produto1 && produto.tipo !== produto1.tipo) {
+                        alert('Por favor, selecione um produto do mesmo tipo para comparação.');
+                        document.getElementById('product2').value = '';
+                        return;
+                    }
+                    
+                    produto2 = produto;
+                    document.querySelector('#product2').parentElement.classList.add('selected');
+                }
+                
+                atualizarBotoesRemover();
+                atualizarComparacao();
+            }
+        }
+
+        function atualizarBotoesRemover() {
+            const btn1 = document.querySelector('#product1').nextElementSibling.querySelector('.btn-remove');
+            const btn2 = document.querySelector('#product2').nextElementSibling.querySelector('.btn-remove');
+            
+            btn1.disabled = !produto1;
+            btn2.disabled = !produto2;
+        }
+
+        function removerProduto(numero) {
+            if (numero === 1) {
+                produto1 = null;
+                document.getElementById('product1').value = '';
+                document.querySelector('#product1').parentElement.classList.remove('selected');
+                
+                // Resetar o segundo select para mostrar todos os produtos
+                const select2 = document.getElementById('product2');
+                select2.innerHTML = '<option value="">Selecione o segundo produto</option>';
+                produtos.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.textContent = p.nome;
+                    select2.appendChild(option);
+                });
+            } else {
+                produto2 = null;
+                document.getElementById('product2').value = '';
+                document.querySelector('#product2').parentElement.classList.remove('selected');
+            }
+            
+            atualizarBotoesRemover();
+            atualizarComparacao();
+        }
+
+        function atualizarComparacao() {
+            const container = document.querySelector('.compare-table-container');
+            const noProducts = document.getElementById('noProducts');
+            const header1 = document.getElementById('header1');
+            const header2 = document.getElementById('header2');
+            const tbody = document.getElementById('comparisonBody');
+
+            if (produto1 || produto2) {
+                container.style.display = 'block';
+                noProducts.style.display = 'none';
+
+                // Cabeçalho com imagem e nome
+                header1.innerHTML = produto1 ? `
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <img src="${produto1.imagem}" alt="${produto1.nome}" style="max-width: 100px; border-radius: 8px; margin-bottom: 0.5rem;">
+                        <div style="font-weight: 600;">${produto1.nome}</div>
+                        <div style="color: #666; margin-top: 0.5rem;">${formatarPreco(produto1.preco)}</div>
+                    </div>
+                ` : '';
+                header2.innerHTML = produto2 ? `
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <img src="${produto2.imagem}" alt="${produto2.nome}" style="max-width: 100px; border-radius: 8px; margin-bottom: 0.5rem;">
+                        <div style="font-weight: 600;">${produto2.nome}</div>
+                        <div style="color: #666; margin-top: 0.5rem;">${formatarPreco(produto2.preco)}</div>
+                    </div>
+                ` : '';
+
+                // Limpar tbody
+                tbody.innerHTML = '';
+
+                // Adicionar especificações
+                if (produto1 || produto2) {
+                    const tipo = produto1 ? produto1.tipo : produto2.tipo;
+                    const especificacoes = produto1 ? produto1.especificacoes : produto2.especificacoes;
+
+                    Object.entries(especificacoes).forEach(([key, value]) => {
+                        const tr = document.createElement('tr');
+                        
+                        // Label da especificação
+                        const tdLabel = document.createElement('td');
+                        tdLabel.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+                        tr.appendChild(tdLabel);
+                        
+                        // Valor do produto 1
+                        const td1 = document.createElement('td');
+                        td1.textContent = produto1 ? produto1.especificacoes[key] : '-';
+                        tr.appendChild(td1);
+                        
+                        // Valor do produto 2
+                        const td2 = document.createElement('td');
+                        td2.textContent = produto2 ? produto2.especificacoes[key] : '-';
+                        tr.appendChild(td2);
+                        
+                        tbody.appendChild(tr);
+                    });
+                }
+            } else {
+                container.style.display = 'none';
+                noProducts.style.display = 'flex';
+            }
+        }
+
+        // Carregar produtos ao iniciar a página
+        document.addEventListener('DOMContentLoaded', carregarProdutos);
+
+        // Verificar se há ID na URL
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const produtoId = urlParams.get('id');
+            
+            if (produtoId) {
+                const produto = produtos.find(p => p.id === parseInt(produtoId));
+                if (produto) {
+                    selecionarProduto(1, produtoId);
+                }
+            }
+        });
+    </script>
 </body>
 </html> 

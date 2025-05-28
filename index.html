@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gamer Gear Store - Periféricos para Gamers</title>
+  <title>OPTO Review - Periféricos para Gamers</title>
   <link rel="stylesheet" href="css/style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -12,7 +12,7 @@
   <!-- Barra de Navegação -->
   <nav class="navbar">
     <div class="nav-container">
-      <a href="index.html" class="nav-logo">Gamer Gear Store</a>
+      <a href="index.html" class="nav-logo">OPTO Review</a>
       <button class="menu-toggle" onclick="toggleMenu()">
         <i class="fas fa-bars"></i>
       </button>
@@ -142,8 +142,7 @@
 
   <!-- Scripts -->
   <script src="js/theme.js"></script>
-  <script src="js/database.js"></script>
-  <script src="js/initialData.js"></script>
+  <script src="js/googleSheetsDB.js"></script>
   <script src="js/products.js"></script>
   <script>
     let currentSlide = 0;
@@ -248,17 +247,9 @@
           return;
         }
 
-        // Ordenar produtos por ID (mais recentes primeiro)
-        produtos.sort((a, b) => b.id - a.id);
-        
-        // Pegar os 4 produtos mais recentes
-        const produtosRecentes = produtos.slice(0, 4);
-        
-        // Adicionar produtos ao grid
-        grid.innerHTML = produtosRecentes.map(produto => createProductCard(produto)).join('');
-
+        grid.innerHTML = produtos.map(produto => createProductCard(produto)).join('');
       } catch (error) {
-        console.error(`Erro ao carregar produtos do tipo ${tipo}:`, error);
+        console.error(`Erro ao carregar produtos da categoria ${tipo}:`, error);
       }
     }
 

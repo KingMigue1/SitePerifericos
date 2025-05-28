@@ -22,7 +22,7 @@ const produtosPorTipo = {
 async function obterProdutosPorTipo(tipo) {
     try {
         const produtos = await obterTodosProdutos();
-        return produtos.filter(produto => produto.tipo === tipo);
+        return produtos.filter(produto => produto.tipo.toLowerCase() === tipo.toLowerCase());
     } catch (error) {
         console.error(`Erro ao obter produtos do tipo ${tipo}:`, error);
         return [];
@@ -32,7 +32,8 @@ async function obterProdutosPorTipo(tipo) {
 // Função para obter produtos por marca
 async function obterProdutosPorMarca(marca) {
     try {
-        return await ProdutoDB.buscarPorMarca(marca);
+        const produtos = await obterTodosProdutos();
+        return produtos.filter(produto => produto.marca?.toLowerCase() === marca.toLowerCase());
     } catch (error) {
         console.error(`Erro ao obter produtos da marca ${marca}:`, error);
         return [];
@@ -42,7 +43,11 @@ async function obterProdutosPorMarca(marca) {
 // Função para obter produtos por faixa de preço
 async function obterProdutosPorPreco(min, max) {
     try {
-        return await ProdutoDB.buscarPorPreco(min, max);
+        const produtos = await obterTodosProdutos();
+        return produtos.filter(produto => {
+            const preco = parseFloat(produto.preco);
+            return preco >= min && preco <= max;
+        });
     } catch (error) {
         console.error('Erro ao obter produtos por preço:', error);
         return [];
@@ -52,7 +57,7 @@ async function obterProdutosPorPreco(min, max) {
 // Função para obter um produto específico
 async function obterProduto(id) {
     try {
-        return await ProdutoDB.buscarPorId(id);
+        return await GoogleSheetsDB.obterPorId(id);
     } catch (error) {
         console.error(`Erro ao obter produto ${id}:`, error);
         return null;
@@ -60,13 +65,25 @@ async function obterProduto(id) {
 }
 
 // Função para obter tipos de produtos disponíveis
-function obterTiposDisponiveis() {
-    return Object.keys(produtosPorTipo);
+async function obterTiposDisponiveis() {
+    try {
+        const produtos = await obterTodosProdutos();
+        const tipos = new Set(produtos.map(produto => produto.tipo.toLowerCase()));
+        return Array.from(tipos);
+    } catch (error) {
+        console.error('Erro ao obter tipos disponíveis:', error);
+        return [];
+    }
 }
 
 // Função para obter marcas disponíveis
-function obterMarcasDisponiveis() {
-    const marcas = new Set();
-    obterTodosProdutos().forEach(produto => marcas.add(produto.marca));
-    return Array.from(marcas);
+async function obterMarcasDisponiveis() {
+    try {
+        const produtos = await obterTodosProdutos();
+        const marcas = new Set(produtos.map(produto => produto.marca).filter(Boolean));
+        return Array.from(marcas);
+    } catch (error) {
+        console.error('Erro ao obter marcas disponíveis:', error);
+        return [];
+    }
 } 

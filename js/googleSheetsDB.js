@@ -1,6 +1,12 @@
 // Configuração da Planilha
-const SPREADSHEET_ID = '1Tt8hpQvfNU47L0oigLJjoWXgWFp4gW3WZiuFMBgbr29YwL2BxP5yAzhpwcLxuGaIN_RlJRqbsEl1Dt';
-const API_KEY = 'YOUR_API_KEY'; // Substitua pela sua chave de API do Google
+const SPREADSHEET_ID = '1yD91Fb6oChOO3Tpb8XSFJjGf2ELeD0F8FLC5ONtljME';
+// Para configurar a API_KEY:
+// 1. Acesse https://console.cloud.google.com/
+// 2. Crie um novo projeto
+// 3. Ative a Google Sheets API
+// 4. Crie uma chave de API em "Credenciais"
+// 5. Substitua 'YOUR_API_KEY' abaixo pela sua chave
+const API_KEY = 'AIzaSyAJElrtiVMn234BFQAMhGY1ARUH9G-xHxs';
 const SHEET_NAME = 'Produtos';
 
 class GoogleSheetsDB {

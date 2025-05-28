@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sobre - Gamer Gear Store</title>
+    <title>Sobre - OPTO Review</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/about.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +13,10 @@
     <!-- Barra de Navegação -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="nav-logo">Gamer Gear Store</a>
+            <a href="index.html" class="nav-logo">OPTO Review</a>
+            <button class="menu-toggle" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="search.html" class="nav-link">Buscar Produtos</a>
@@ -29,13 +32,14 @@
             </div>
         </div>
     </nav>
+    <div class="nav-overlay" onclick="toggleMenu()"></div>
 
     <!-- Conteúdo Principal -->
     <main class="about-container">
         <!-- Hero Section -->
         <section class="hero-section">
             <div class="hero-content">
-                <h1>Sobre o Gamer Gear Store</h1>
+                <h1>Sobre o OPTO Review</h1>
                 <p class="hero-subtitle">Sua fonte confiável para escolher os melhores periféricos gamers</p>
             </div>
         </section>
@@ -104,7 +108,7 @@
             </div>
             <div class="footer-section">
                 <h3>Contato</h3>
-                <p><i class="fas fa-envelope"></i> contato@gamergearstore.com</p>
+                <p><i class="fas fa-envelope"></i> contato@optoreview.com</p>
                 <p><i class="fas fa-phone"></i> (11) 99999-9999</p>
             </div>
             <div class="footer-section">
@@ -115,10 +119,30 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 Gamer Gear Store. Todos os direitos reservados.</p>
+            <p>&copy; 2024 OPTO Review. Todos os direitos reservados.</p>
         </div>
     </footer>
     <script src="js/about.js"></script>
     <script src="js/theme.js"></script>
+    <script>
+        // Função para alternar o menu mobile
+        function toggleMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            const overlay = document.querySelector('.nav-overlay');
+            const menuToggle = document.querySelector('.menu-toggle i');
+            
+            navLinks.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Alterna o ícone do menu
+            if (menuToggle.classList.contains('fa-bars')) {
+                menuToggle.classList.remove('fa-bars');
+                menuToggle.classList.add('fa-times');
+            } else {
+                menuToggle.classList.remove('fa-times');
+                menuToggle.classList.add('fa-bars');
+            }
+        }
+    </script>
 </body>
 </html> 

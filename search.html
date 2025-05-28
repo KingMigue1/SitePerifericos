@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscar Produtos - Gamer Gear Store</title>
+    <title>Buscar Produtos - OPTO Review</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/search.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +13,10 @@
     <!-- Barra de Navegação -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="nav-logo">Gamer Gear Store</a>
+            <a href="index.html" class="nav-logo">OPTO Review</a>
+            <button class="menu-toggle" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="search.html" class="nav-link active">Buscar Produtos</a>
@@ -29,6 +32,7 @@
             </div>
         </div>
     </nav>
+    <div class="nav-overlay" onclick="toggleMenu()"></div>
 
     <!-- Barra de Busca -->
     <header class="search-header">
@@ -143,45 +147,69 @@
         </section>
     </main>
 
-    <script src="js/database.js"></script>
-    <script src="js/products.js"></script>
+    <!-- Scripts -->
     <script src="js/theme.js"></script>
+    <script src="js/googleSheetsDB.js"></script>
+    <script src="js/products.js"></script>
     <script>
-        // Função para limpar todos os filtros
-        function limparFiltros() {
-            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            document.getElementById('priceRange').value = 2000;
-            document.getElementById('minPrice').value = '';
-            document.getElementById('maxPrice').value = 2000;
-            buscarProdutos();
+        // Função para alternar o menu mobile
+        function toggleMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            const overlay = document.querySelector('.nav-overlay');
+            const menuToggle = document.querySelector('.menu-toggle i');
+            
+            navLinks.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Alterna o ícone do menu
+            if (menuToggle.classList.contains('fa-bars')) {
+                menuToggle.classList.remove('fa-bars');
+                menuToggle.classList.add('fa-times');
+            } else {
+                menuToggle.classList.remove('fa-times');
+                menuToggle.classList.add('fa-bars');
+            }
         }
 
-        // Função para buscar produtos
-        async function buscarProdutos() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const selectedTypes = Array.from(document.querySelectorAll('input[name="tipo"]:checked')).map(cb => cb.value);
-            const selectedBrands = Array.from(document.querySelectorAll('input[name="marca"]:checked')).map(cb => cb.value);
-            const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
-            const maxPrice = parseFloat(document.getElementById('maxPrice').value) || 2000;
+        // Variáveis globais
+        let produtos = [];
+        let produtosFiltrados = [];
 
-            const produtos = await obterTodosProdutos();
-            const produtosFiltrados = produtos.filter(produto => {
-                const matchesSearch = produto.nome.toLowerCase().includes(searchTerm) ||
-                                    produto.marca.toLowerCase().includes(searchTerm);
-                const matchesType = selectedTypes.length === 0 || selectedTypes.includes(produto.tipo);
-                const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(produto.marca.toLowerCase());
-                const matchesPrice = produto.preco >= minPrice && produto.preco <= maxPrice;
+        // Funções de Utilidade
+        function formatarPreco(preco) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(preco);
+        }
 
-                return matchesSearch && matchesType && matchesBrand && matchesPrice;
-            });
+        // Função para obter todos os produtos
+        async function obterTodosProdutos() {
+            try {
+                return await GoogleSheetsDB.listarTodos();
+            } catch (error) {
+                console.error('Erro ao obter produtos:', error);
+                return [];
+            }
+        }
 
-            const productsGrid = document.getElementById('productsGrid');
+        // Funções de Interface
+        async function carregarProdutos() {
+            try {
+                produtos = await obterTodosProdutos();
+                produtosFiltrados = [...produtos];
+                atualizarListaProdutos();
+            } catch (error) {
+                console.error('Erro ao carregar produtos:', error);
+            }
+        }
+
+        function atualizarListaProdutos() {
+            const container = document.getElementById('productsGrid');
             const noResults = document.getElementById('noResults');
             const resultsCount = document.getElementById('resultsCount');
-
-            productsGrid.innerHTML = '';
+            
+            container.innerHTML = '';
             resultsCount.textContent = `${produtosFiltrados.length} produto${produtosFiltrados.length !== 1 ? 's' : ''} encontrado${produtosFiltrados.length !== 1 ? 's' : ''}`;
 
             if (produtosFiltrados.length === 0) {
@@ -214,38 +242,69 @@
                                 `Resolução: ${produto.especificacoes.resolucao} • FPS: ${produto.especificacoes.fps} • ${produto.especificacoes.microfone}` :
                                 ''}
                         </p>
-                        <div class="product-price">R$ ${produto.preco.toFixed(2)}</div>
+                        <div class="product-price">${formatarPreco(produto.preco)}</div>
                         <div class="product-buttons">
-                            <button class="btn-compare" onclick="window.location.href='compare.html'">Comparar</button>
-                            <a href="${produto.urlProduto}" class="btn-shop" target="_blank">Ver na loja</a>
+                            <a href="product.html?id=${produto.id}" class="btn btn-primary">Ver Detalhes</a>
+                            <a href="compare.html?id=${produto.id}" class="btn btn-secondary">Comparar</a>
                         </div>
                     </div>
                 `;
-                productsGrid.appendChild(card);
+                container.appendChild(card);
             });
+        }
+
+        function filtrarProdutos() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const selectedTypes = Array.from(document.querySelectorAll('input[name="tipo"]:checked')).map(cb => cb.value);
+            const selectedBrands = Array.from(document.querySelectorAll('input[name="marca"]:checked')).map(cb => cb.value);
+            const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+            const maxPrice = parseFloat(document.getElementById('maxPrice').value) || 2000;
+
+            produtosFiltrados = produtos.filter(produto => {
+                const matchesSearch = produto.nome.toLowerCase().includes(searchTerm);
+                const matchesType = selectedTypes.length === 0 || selectedTypes.includes(produto.tipo.toLowerCase());
+                const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(produto.marca?.toLowerCase() || '');
+                const matchesPrice = produto.preco >= minPrice && produto.preco <= maxPrice;
+
+                return matchesSearch && matchesType && matchesBrand && matchesPrice;
+            });
+
+            atualizarListaProdutos();
+        }
+
+        // Função para limpar todos os filtros
+        function limparFiltros() {
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.getElementById('priceRange').value = 2000;
+            document.getElementById('minPrice').value = '';
+            document.getElementById('maxPrice').value = 2000;
+            document.getElementById('searchInput').value = '';
+            filtrarProdutos();
         }
 
         // Event Listeners
         document.getElementById('searchForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            buscarProdutos();
+            filtrarProdutos();
         });
 
-        document.getElementById('searchInput').addEventListener('input', buscarProdutos);
+        document.getElementById('searchInput').addEventListener('input', filtrarProdutos);
         document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', buscarProdutos);
+            checkbox.addEventListener('change', filtrarProdutos);
         });
 
         document.getElementById('priceRange').addEventListener('input', (e) => {
             document.getElementById('maxPrice').value = e.target.value;
-            buscarProdutos();
+            filtrarProdutos();
         });
 
-        document.getElementById('minPrice').addEventListener('input', buscarProdutos);
-        document.getElementById('maxPrice').addEventListener('input', buscarProdutos);
+        document.getElementById('minPrice').addEventListener('input', filtrarProdutos);
+        document.getElementById('maxPrice').addEventListener('input', filtrarProdutos);
 
         // Carregar produtos ao iniciar a página
-        document.addEventListener('DOMContentLoaded', buscarProdutos);
+        document.addEventListener('DOMContentLoaded', carregarProdutos);
     </script>
 </body>
 </html> 
