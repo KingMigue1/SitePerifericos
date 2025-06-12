@@ -1,71 +1,153 @@
 # OPTO Review
 
-OPTO Review é um site para consulta, comparação e análise de periféricos gamers, com integração ao Google Sheets para gerenciamento dos produtos.
+OPTO Review é uma plataforma web moderna para análise e comparação de periféricos gamers, oferecendo uma interface intuitiva e recursos avançados para ajudar usuários a escolher os melhores equipamentos para suas necessidades.
 
-## Funcionalidades
+## 🌟 Destaques
 
-- **Página Inicial:**
-  - Destaques e categorias de produtos (mouses, teclados, headsets, etc.)
-  - Botão "Ver Todos" para cada categoria, já filtrando na busca
-  - Carrossel de produtos recentes
+- Interface moderna e responsiva
+- Sistema de busca avançada com filtros
+- Comparador de produtos em tempo real
+- Tema claro/escuro
+- Integração com Google Sheets para armazenamento de dados
+- Design otimizado para dispositivos móveis
 
-- **Busca de Produtos:**
-  - Filtros por tipo, marca e faixa de preço
-  - Busca por nome
-  - Resultados exibidos em cards padronizados
-  - Botões "Detalhes" e "Comparar" em cada card
+## 🚀 Funcionalidades
 
-- **Página de Detalhes do Produto:**
-  - Exibe todas as informações do produto (nome, imagem, preço, especificações, link para loja)
-  - Botão azul de voltar no canto superior esquerdo do card
-  - Botões "Visitar a loja" e "Comparar"
-  - Seção "Produtos Similares" abaixo do card, mostrando outros produtos do mesmo tipo
+### 1. Catálogo de Produtos
+- Visualização de produtos por categoria:
+  - Mouse
+  - Teclado
+  - Headset
+  - Mousepad
+  - Monitor
+  - Webcam
+- Carrossel de produtos em destaque
+- Exibição detalhada de especificações técnicas
+- Imagens de alta qualidade
 
-- **Página de Comparação:**
-  - Permite comparar dois produtos lado a lado
-  - Pré-seleção automática ao clicar em "Comparar" em qualquer card
+### 2. Sistema de Busca Avançada
+- Busca em tempo real por nome e marca
+- Filtros múltiplos:
+  - Tipo de produto
+  - Marca
+  - Faixa de preço
+- Resultados instantâneos
+- Contador de produtos encontrados
 
-- **Administração:**
-  - Integração com Google Sheets para listar, adicionar, editar e excluir produtos
+### 3. Comparador de Produtos
+- Comparação lado a lado
+- Análise detalhada de especificações
+- Interface intuitiva
+- Seleção rápida de produtos
 
-## Tecnologias Utilizadas
-- HTML5, CSS3 (responsivo e moderno)
+### 4. Recursos de Interface
+- Tema claro/escuro automático
+- Design responsivo para todos os dispositivos
+- Menu mobile otimizado
+- Animações suaves
+- Feedback visual em interações
+
+## 🛠️ Tecnologias
+
+### Frontend
+- HTML5
+- CSS3 (Flexbox e Grid)
 - JavaScript (ES6+)
-- Google Sheets API (como banco de dados)
-- Font Awesome para ícones
+- Font Awesome 6.0.0
 - Google Fonts (Inter)
 
-## Instalação e Uso
+### Backend
+- Google Sheets API
+- JavaScript puro
+- Cache local para performance
 
-1. **Clone o repositório:**
-   ```bash
-   git clone https://github.com/seu-usuario/seu-repo.git
-   cd seu-repo
-   ```
+## 📁 Estrutura do Projeto
 
-2. **Configuração da API do Google Sheets:**
-   - Crie um projeto no [Google Cloud Console](https://console.cloud.google.com/)
+```
+OPTO Review/
+├── index.html          # Página inicial
+├── search.html         # Página de busca
+├── compare.html        # Página de comparação
+├── about.html          # Página sobre
+├── css/
+│   ├── style.css      # Estilos globais
+│   ├── search.css     # Estilos da busca
+│   └── compare.css    # Estilos da comparação
+└── js/
+    ├── theme.js       # Gerenciamento de tema
+    ├── googleSheetsDB.js # Integração com Google Sheets
+    └── products.js    # Manipulação de produtos
+```
+
+## 📄 Descrição dos Arquivos
+
+### Arquivos HTML
+- `index.html`: Página inicial com carrossel de produtos em destaque e categorias
+- `search.html`: Página de busca com filtros avançados e resultados em tempo real
+- `compare.html`: Página de comparação de produtos lado a lado
+- `about.html`: Página com informações sobre o projeto
+
+### Arquivos CSS
+- `style.css`: Estilos globais, layout base e componentes comuns
+- `search.css`: Estilos específicos para a página de busca e cards de produtos
+- `compare.css`: Estilos para a página de comparação e tabelas de especificações
+
+### Arquivos JavaScript
+- `theme.js`: 
+  - Gerencia o sistema de tema claro/escuro
+  - Implementa a alternância entre temas
+  - Salva a preferência do usuário no localStorage
+  - Controla os ícones do botão de tema
+
+- `googleSheetsDB.js`:
+  - Implementa a integração com Google Sheets como banco de dados
+  - Fornece operações CRUD completas (Create, Read, Update, Delete)
+  - Gerencia a comunicação com a API do Google Sheets
+  - Trata erros e validações de dados
+
+- `products.js`:
+  - Contém funções para manipulação de produtos
+  - Implementa filtros por tipo, marca e preço
+  - Fornece funções utilitárias para obter informações sobre produtos
+  - Gerencia o cache local de produtos
+
+- `search.js`:
+  - Implementa o sistema de busca e filtragem
+  - Gerencia a exibição dos resultados na interface
+  - Controla os filtros e a limpeza dos mesmos
+  - Atualiza a contagem de resultados em tempo real
+
+## 🔧 Configuração
+
+1. Clone o repositório:
+```bash
+git clone https://github.com/seu-usuario/SitePerifericos.git
+cd SitePerifericos
+```
+
+2. Configure o Google Sheets API:
+   - Crie um projeto no [Google Cloud Console](https://console.cloud.google.com)
    - Ative a Google Sheets API
-   - Crie uma chave de API e substitua no arquivo `js/googleSheetsDB.js`
-   - Configure o ID da planilha e o nome da aba conforme seu Google Sheets
+   - Crie credenciais de serviço
+   - Configure as credenciais no arquivo `js/googleSheetsDB.js`
 
-3. **Abra o arquivo `index.html` em seu navegador.**
+3. Inicie o projeto:
+   - Use um servidor web local (como Live Server no VS Code)
+   - Ou hospede em um servidor de sua preferência
 
-## Estrutura de Arquivos
-- `index.html` — Página inicial
-- `search.html` — Busca e filtros
-- `product.html` — Detalhes do produto
-- `compare.html` — Comparação de produtos
-- `admin.html` — Administração (CRUD)
-- `js/` — Scripts JavaScript
-- `css/` — Estilos CSS
+## 💻 Uso
 
-## Personalização
-- Para adicionar novos tipos de produtos, basta atualizar a planilha e os filtros no HTML.
-- O layout é responsivo e pode ser customizado via CSS.
+### Busca de Produtos
+1. Acesse a página de busca
+2. Use a barra de busca para encontrar produtos
+3. Aplique filtros conforme necessário
+4. Visualize os resultados em tempo real
 
-## Licença
-MIT
+### Comparação de Produtos
+1. Selecione produtos para comparar
+2. Visualize as especificações lado a lado
+3. Compare preços e características
+4. Tome sua decisão de compra
 
 ## 🤝 Contribuindo
 
@@ -75,13 +157,12 @@ MIT
 4. Push para a Branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
+## 📝 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
 ## 📧 Contato
 
-- Email: contato@optoreview.com
-- Website: [www.optoreview.com](http://www.optoreview.com)
+Seu Nome - [@seu_twitter](https://twitter.com/seu_twitter) - email@exemplo.com
 
-## 🙏 Agradecimentos
-
-- Equipe de desenvolvimento
-- Contribuidores
-- Comunidade de usuários 
+Link do Projeto: [https://github.com/seu-usuario/SitePerifericos](https://github.com/seu-usuario/SitePerifericos) 

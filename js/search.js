@@ -1,4 +1,13 @@
-// Função para buscar produtos
+/**
+ * Sistema de Busca de Produtos
+ * Este arquivo implementa a funcionalidade de busca e filtragem de produtos,
+ * incluindo a exibição dos resultados na interface.
+ */
+
+/**
+ * Realiza a busca de produtos com base nos filtros aplicados
+ * @param {Event} event - Evento do formulário (opcional)
+ */
 async function buscarProdutos(event) {
     if (event) event.preventDefault();
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -54,8 +63,8 @@ async function buscarProdutos(event) {
                 </p>
                 <div class="product-price">R$ ${produto.preco.toFixed(2)}</div>
                 <div class="product-buttons">
-                    <button class="btn-compare" onclick="window.location.href='compare.html?id=${produto.id}'">Comparar</button>
-                    <a href="product.html?id=${produto.id}" class="btn-shop">Detalhes</a>
+                    <button class="btn-compare" onclick="window.location.href='compare.html'">Comparar</button>
+                    <a href="${produto.urlProduto}" target="_blank" class="btn-shop">Ver na loja</a>
                 </div>
             </div>
         `;
@@ -63,7 +72,10 @@ async function buscarProdutos(event) {
     });
 }
 
-// Função para obter todos os produtos da planilha Google Sheets
+/**
+ * Obtém todos os produtos da planilha Google Sheets
+ * @returns {Promise<Array>} Array com todos os produtos
+ */
 async function obterTodosProdutos() {
     try {
         return await GoogleSheetsDB.listarTodos();
@@ -73,7 +85,9 @@ async function obterTodosProdutos() {
     }
 }
 
-// Função para limpar filtros
+/**
+ * Limpa todos os filtros de busca e reinicia a busca
+ */
 function limparFiltros() {
     document.getElementById('searchInput').value = '';
     document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
@@ -81,7 +95,7 @@ function limparFiltros() {
     buscarProdutos(new Event('submit'));
 }
 
-// Inicializar busca quando a página carregar
+// Inicializa a busca quando a página é carregada
 document.addEventListener('DOMContentLoaded', () => {
     buscarProdutos(new Event('submit'));
 }); 
