@@ -12,15 +12,18 @@ async function buscarProdutos(event) {
     if (event) event.preventDefault();
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const tipoFiltros = Array.from(document.querySelectorAll('input[name="tipo"]:checked')).map(cb => cb.value);
+    const tipoMarcas = Array.from(document.querySelectorAll('input[name="marca"]:checked')).map(cb => cb.value.toLowerCase());
     const precoMax = parseFloat(document.getElementById('maxPrice').value);
     
     const produtos = await obterTodosProdutos();
     const produtosFiltrados = produtos.filter(produto => {
-        const matchNome = produto.nome.toLowerCase().includes(searchTerm);
+        const nomeLower = produto.nome.toLowerCase();
+        const matchNome = nomeLower.includes(searchTerm);
         const matchTipo = tipoFiltros.length === 0 || tipoFiltros.includes(produto.tipo);
+        const matchMarca = tipoMarcas.length === 0 || tipoMarcas.some(marca => nomeLower.includes(marca));
         const matchPreco = produto.preco <= precoMax;
         
-        return matchNome && matchTipo && matchPreco;
+        return matchNome && matchTipo && matchPreco && matchMarca;
     });
     
     const productsGrid = document.getElementById('productsGrid');
