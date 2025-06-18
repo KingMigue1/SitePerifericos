@@ -11,17 +11,28 @@
     text-align: center;
     padding: var(--spacing-xl) 0;
     margin-bottom: var(--spacing-xl);
-    background: linear-gradient(45deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
+    background: linear-gradient(45deg, rgba(255,255,255,0.95), rgba(200,200,200,0.7));
     border-radius: 20px;
+}
+
+body.dark-theme .hero-section {
+    background: linear-gradient(45deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
 }
 
 .hero-content h1 {
     font-size: 3.5rem;
     font-weight: 700;
     margin-bottom: var(--spacing-md);
+    color: var(--accent-primary);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+body.dark-theme .hero-content h1 {
     background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: unset;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.18), 0 1px 0 #fff;
 }
 
 .hero-subtitle {
@@ -193,15 +204,6 @@
     background: rgba(0, 0, 0, 0.2);
     border-radius: 15px;
     transition: transform 0.3s ease;
-    
-    
-    &.commitments-card-affiliated {
-    height: 10px;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
-    gap: var(--spacing-md);
-    padding: 20%; 
-  }
-
 }
 
 .commitment-card:hover {
@@ -304,7 +306,6 @@
 
     .about-section {
         padding: var(--spacing-md);
-        margin
     }
 
     .section-icon {
