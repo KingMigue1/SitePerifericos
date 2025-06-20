@@ -385,6 +385,19 @@
                 carregarProdutos(this.value);
             });
             carregarProdutos(); // Carregar todos inicialmente
+
+            // NOVO: Selecionar produto automaticamente se houver id na URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const idParam = urlParams.get('id');
+            if (idParam) {
+                // Esperar produtos carregarem e selecionar
+                (async () => {
+                    await carregarProdutos();
+                    document.getElementById('product1').value = idParam;
+                    // Disparar evento de seleção
+                    selecionarProduto(1, idParam);
+                })();
+            }
         });
     </script>
 </body>
